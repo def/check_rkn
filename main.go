@@ -156,6 +156,9 @@ func main() {
 			return
 		}
 	})
+	http.HandleFunc("/ping", func(w http.ResponseWriter, r *http.Request) {
+		fmt.Fprintf(w, "OK")
+	})
 	log.Println("listening on", listen)
 	log.Fatal(http.ListenAndServe(listen, nil))
 }
