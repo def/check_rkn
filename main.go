@@ -1,27 +1,26 @@
 package main
 
 import (
-	"github.com/zmap/go-iptree/iptree"
-	"os"
 	"bufio"
-	"strings"
-	"net/http"
-	"log"
-	"sync"
-	"time"
 	"encoding/json"
 	"fmt"
+	"github.com/zmap/go-iptree/iptree"
 	"io"
+	"log"
+	"net/http"
+	"os"
 	"path"
+	"strings"
+	"sync"
+	"time"
 )
 
 const (
-	dumpDownloadTimeout = 30 * time.Second
-	dumpUrl = "https://github.com/zapret-info/z-i/raw/master/dump.csv"
+	dumpDownloadTimeout   = 30 * time.Second
+	dumpUrl               = "https://github.com/zapret-info/z-i/raw/master/dump.csv"
 	downloadRetryInterval = time.Second * 30
-	dumpUpdateInterval = time.Minute * 15
+	dumpUpdateInterval    = time.Minute * 15
 )
-
 
 func loadDump(path string) (*iptree.IPTree, error) {
 	file, err := os.Open(path)
@@ -30,6 +29,8 @@ func loadDump(path string) (*iptree.IPTree, error) {
 	}
 	defer file.Close()
 	scanner := bufio.NewScanner(file)
+	buf := make([]byte, 0, 64*1024)
+	scanner.Buffer(buf, 1024*1024)
 	t := iptree.New()
 	t.AddByString("0.0.0.0/0", 0)
 	for scanner.Scan() {
@@ -46,7 +47,6 @@ func loadDump(path string) (*iptree.IPTree, error) {
 	}
 	return t, err
 }
-
 
 func downloadDump(url, path string) error {
 	log.Printf("downloading dump from %s to %s", url, path)
@@ -77,7 +77,6 @@ func downloadDump(url, path string) error {
 	return nil
 }
 
-
 func main() {
 	listen := os.Args[1]
 	dumpDir := os.Args[2]
@@ -100,7 +99,7 @@ func main() {
 	}
 	go func() {
 		ticker := time.NewTicker(dumpUpdateInterval).C
-		for _ = range ticker {
+		for range ticker {
 			log.Println("updating db")
 			err := downloadDump(dumpUrl, freshDump)
 			if err != nil {
@@ -162,4 +161,3 @@ func main() {
 	log.Println("listening on", listen)
 	log.Fatal(http.ListenAndServe(listen, nil))
 }
-
