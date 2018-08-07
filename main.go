@@ -30,7 +30,7 @@ func loadDump(path string) (*iptree.IPTree, error) {
 	defer file.Close()
 	scanner := bufio.NewScanner(file)
 	buf := make([]byte, 0, 64*1024)
-	scanner.Buffer(buf, 1024*1024)
+	scanner.Buffer(buf, 20*1024*1024)
 	t := iptree.New()
 	t.AddByString("0.0.0.0/0", 0)
 	for scanner.Scan() {
